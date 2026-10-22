@@ -1,0 +1,15 @@
+{
+  "name": "The FlightScene EFB",
+  "short_name": "EFB Checklists",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/airplane-mode-on.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The FlightScene - EFB Normal Checklists</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0B0F19;
+      --bg-card: #151C2C;
+      --bg-card-hover: #1C263B;
+      --bg-card-active: #222E47;
+      --accent-cyan: #00E5FF;
+      --accent-green: #00E676;
+      --accent-amber: #FFB300;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --border-color: #26334D;
+      --border-accent: #1E293B;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+      background: rgba(21, 28, 44, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-cyan), #0088FF);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+      color: #FFF;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-title span {
+      font-size: 10px;
+      color: var(--accent-cyan);
+      letter-spacing: 1.5px;
+      font-weight: 700;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-cyan);
+      color: #FFF;
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: #000;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #33ECFF;
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      flex: 1;
+      padding: 24px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* HOME SCREEN */
+    #home-view {
+      display: block;
+    }
+
+    .hero-title {
+      margin-bottom: 24px;
+    }
+
+    .hero-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-title p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .aircraft-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .aircraft-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .aircraft-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--border-color);
+      transition: background 0.2s ease;
+    }
+
+    .aircraft-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 229, 255, 0.4);
+      background: var(--bg-card-hover);
+      box-shadow: var(--shadow);
+    }
+
+    .aircraft-card:hover::before {
+      background: var(--accent-cyan);
+    }
+
+    .aircraft-manufacturer {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .aircraft-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 12px;
+    }
+
+    .aircraft-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .card-progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .card-progress-bar {
+      height: 100%;
+      background: var(--accent-green);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* CHECKLIST VIEW */
+    #checklist-view {
+      display: none;
+    }
+
+    .checklist-header {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .checklist-info h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checklist-info p {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .progress-container {
+      flex: 1;
+      max-width: 320px;
+      min-width: 200px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* BLOCKS & TABLES */
+    .blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+      align-items: start;
+    }
+
+    .checklist-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .checklist-block.completed {
+      border-color: rgba(0, 230, 118, 0.4);
+    }
+
+    .block-header {
+      background: #182235;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: background 0.2s ease;
+    }
+
+    .checklist-block.open .block-header {
+      border-bottom-color: var(--border-color);
+    }
+
+    .block-header:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .block-title-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .block-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFF;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .block-counter {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .toggle-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease;
+      color: var(--text-secondary);
+    }
+
+    .checklist-block.open .toggle-icon {
+      transform: rotate(180deg);
+      color: var(--accent-cyan);
+    }
+
+    .block-content {
+      display: none;
+      padding: 0;
+    }
+
+    .checklist-block.open .block-content {
+      display: block;
+    }
+
+    /* ITEM ROWS */
+    .checklist-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .checklist-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .checklist-row:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-row:hover {
+      background: rgba(0, 229, 255, 0.04);
+    }
+
+    .checklist-row.checked {
+      background: rgba(0, 230, 118, 0.05);
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      padding-right: 12px;
+    }
+
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--text-muted);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .checklist-row.checked .checkbox {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: #000;
+    }
+
+    .checkbox svg {
+      display: none;
+      width: 12px;
+      height: 12px;
+      stroke-width: 3;
+    }
+
+    .checklist-row.checked .checkbox svg {
+      display: block;
+    }
+
+    .item-challenge {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: color 0.2s ease;
+    }
+
+    .checklist-row.checked .item-challenge {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .item-response {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-align: right;
+      padding: 3px 8px;
+      background: rgba(0, 229, 255, 0.08);
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .checklist-row.checked .item-response {
+      color: var(--accent-green);
+      background: rgba(0, 230, 118, 0.1);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    /* FOOTER BRANDING */
+    footer {
+      background: #080B12;
+      border-top: 1px solid var(--border-color);
+      padding: 18px 24px;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .footer-brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-brand span {
+      color: var(--accent-cyan);
+    }
+
+    @media (max-width: 768px) {
+      .blocks-grid {
+        grid-template-columns: 1fr;
+      }
+      main {
+        padding: 16px;
+      }
+      .checklist-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .progress-container {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand" onclick="showHome()">
+      <div class="brand-logo">FS</div>
+      <div class="brand-title">
+        THE FLIGHTSCENE
+        <span>NORMAL CHECKLISTS EFB</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" id="btn-back" onclick="showHome()" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Vliegtuigen
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <!-- HOME VIEW -->
+    <section id="home-view">
+      <div class="hero-title">
+        <h1>Selecteer Vliegtuig Checklist</h1>
+        <p>Interactieve normaal checklists voor vluchtsimulatie met inklapbare secties.</p>
+      </div>
+      <div class="aircraft-grid" id="aircraft-grid"></div>
+    </section>
+
+    <!-- CHECKLIST VIEW -->
+    <section id="checklist-view">
+      <div class="checklist-header">
+        <div class="checklist-info">
+          <h2 id="current-aircraft-title">Airbus A320</h2>
+          <p id="current-aircraft-sub">The FlightScene • Standard Operating Procedures</p>
+        </div>
+        <div class="progress-container">
+          <div class="progress-label">
+            <span>Totale Voortgang</span>
+            <span id="total-progress-percent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="total-progress-bar"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; width: 100%; justify-content: flex-end; margin-top: 8px;">
+          <button class="btn" onclick="toggleAllBlocks(true)">Alles Uitklappen</button>
+          <button class="btn" onclick="toggleAllBlocks(false)">Alles Inklappen</button>
+          <button class="btn btn-primary" onclick="resetCurrentChecklist()">Reset Vinkjes</button>
+        </div>
+      </div>
+
+      <div class="blocks-grid" id="blocks-container"></div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      A <span>The FlightScene Sim Solutions</span> Product
+    </div>
+  </footer>
+
+  <script>
+    // DATA ALL 12 AIRCRAFT CHECKLISTS
+    const aircraftData = [
+      {
+        id: "f70_f100",
+        manufacturer: "Fokker",
+        name: "Fokker F70 / F100",
+        rev: "VER 2-REV 2",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "BATTERIES", r: "ON" },
+            { c: "EXTERNAL POWER", r: "AS RQRD" },
+            { c: "IRSS", r: "NAV" },
+            { c: "FMS", r: "INIT" },
+            { c: "CABIN PRESS & LDG ALT", r: "SET" },
+            { c: "AILERON & RUDDER TRIM", r: "ZERO" },
+            { c: "THRUST LEVERS", r: "IDLE" },
+            { c: "FUEL LEVERS", r: "SHUT" },
+            { c: "SPEED BRAKES", r: "IN" },
+            { c: "FLIGHT CONTROL LOCK", r: "ON" },
+            { c: "ATC FLIGHT NUMBER", r: "SET" }
+          ],
+          "PREFLIGHT": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "ENGINES", r: "CUTOFF" },
+            { c: "OFP/LOADSHEET", r: "ON BOARD" },
+            { c: "RE-FUELING", r: "PERFORMED" },
+            { c: "LOCAL QNH", r: "SET & X-CHECKED" },
+            { c: "FLIGHT CONTROL LOCK", r: "OFF" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED & FREE" },
+            { c: "FLAPS", r: "SET AS RQRD" },
+            { c: "AUTO BRAKE", r: "RTO" },
+            { c: "LIFT DUMPERS", r: "ARMED" },
+            { c: "ATS/NAV/PROF", r: "ARMED" },
+            { c: "WX RADAR", r: "AS RQRD" }
+          ],
+          "BEFORE START": [
+            { c: "FUEL PUMPS", r: "ON" },
+            { c: "BLEED PRESSURE", r: "CHECKED" },
+            { c: "WINDOW/PROBE HEAT", r: "ON" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "DOORS/WINDOWS", r: "CLOSED" },
+            { c: "BEACON", r: "ON" },
+            { c: "CABIN CALL", r: "GIVEN" }
+          ],
+          "AFTER START": [
+            { c: "APU", r: "AS RQRD" },
+            { c: "START P/B", r: "AS RQRD" },
+            { c: "IGNITION", r: "NORMAL" },
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "STAB TRIM", r: "SET UNITS, CHECKED" },
+            { c: "ALERT LIGHTS", r: "OUT" }
+          ],
+          "TAXI": [
+            { c: "BRAKE TEMPERATURE", r: "CHECKED" },
+            { c: "T/O CONFIG", r: "CHECKED" },
+            { c: "CABIN SECURED", r: "RECEIVED" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "FLAPS", r: "SET" },
+            { c: "LIFT DUMPERS", r: "ARMED" },
+            { c: "NAV INSTRUMENTS", r: "SET" },
+            { c: "T/O DATA", r: "SET" },
+            { c: "TRANSPONDER", r: "SET" },
+            { c: "EFIS/FMP", r: "CHECKED" }
+          ],
+          "CLIMB": [
+            { c: "ALTIMETERS", r: "STD & X-CHECKED" },
+            { c: "FLAPS", r: "IN & CHECKED" },
+            { c: "LDG GEAR", r: "UP & LIGHTS OUT" },
+            { c: "ECON", r: "AS RQRD" },
+            { c: "FUEL QUANTITY", r: "BALANCED" }
+          ],
+          "DESCENT": [
+            { c: "PRESSURIZATION", r: "LDG ALT FT SET" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "APPROACH BRIEFING", r: "PERFORMED" }
+          ],
+          "APPROACH": [
+            { c: "ALTIMETERS", r: "SET & X-CHECKED" },
+            { c: "LANDING DATA", r: "SET" },
+            { c: "MINIMUMS", r: "SET" }
+          ],
+          "BEFORE LANDING": [
+            { c: "GEAR", r: "DOWN & 3 GREEN" },
+            { c: "AUTO BRAKE", r: "AS RQRD" },
+            { c: "FLAPS", r: "AS RQRD" },
+            { c: "LIFT DUMPERS", r: "ARMED" }
+          ],
+          "AFTER LANDING": [
+            { c: "SPEEDBRAKES", r: "IN" },
+            { c: "FLAPS", r: "UP" },
+            { c: "LIFT DUMPERS", r: "IN" },
+            { c: "FLIGHT CONTROL LOCK", r: "ON" }
+          ],
+          "TRANSIT PARKING": [
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "FUEL LEVERS", r: "SHUT" },
+            { c: "RED BEACON LIGHT", r: "OFF" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "CABIN CALL", r: "GIVEN" },
+            { c: "ANTI ICE", r: "OFF" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "WINDOW/PROBE HEAT", r: "OFF" }
+          ],
+          "FINAL PARKING": [
+            { c: "AT P/B", r: "OFF" },
+            { c: "IRS", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "EXTERNAL LIGHTS", r: "OFF" },
+            { c: "DU'S/COCKPIT LIGHTS", r: "OFF" },
+            { c: "APU/GPU", r: "OFF" },
+            { c: "BATTERIES", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "a320",
+        manufacturer: "Airbus",
+        name: "Airbus A320 CEO/NEO",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "FUEL QUANTITY", r: "BALANCED" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "ADIRS", r: "NAV" },
+            { c: "BARO REF", r: "QNH (BOTH)" }
+          ],
+          "BEFORE START": [
+            { c: "PARKING BRAKE", r: "ON" },
+            { c: "T/O DATA", r: "CONFIRMED" },
+            { c: "WINDOWS", r: "CLOSED" },
+            { c: "PED", r: "FLIGHT MODE" },
+            { c: "DOORS", r: "CLOSED AND ARMED" },
+            { c: "BEACON", r: "ON" }
+          ],
+          "AFTER START": [
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "ECAM STATUS", r: "CHECKED" },
+            { c: "PITCH TRIM", r: "% UP/DN SET" },
+            { c: "RUDDER TRIM", r: "NEUTRAL" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "FLAPS", r: "CONF" },
+            { c: "FMA", r: "READ AND CHECKED" },
+            { c: "RADAR & PRED W/S", r: "ON" },
+            { c: "ECAM MEMO", r: "T/O NO BLUE" },
+            { c: "EFB", r: "AS RQRD" }
+          ],
+          "TAXI": [
+            { c: "CABIN", r: "SECURED FOR T/O" },
+            { c: "T/O RWY", r: "CONFIRMED" },
+            { c: "TCAS", r: "TA/RA" },
+            { c: "PACKS 1 & 2", r: "AS RQRD" }
+          ],
+          "APPROACH": [
+            { c: "BARO REF", r: "QNH (BOTH)" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "MINIMUMS", r: "BARO/DH SET" },
+            { c: "AUTO BRAKE", r: "AS RQRD" },
+            { c: "EFB", r: "AS RQRD" }
+          ],
+          "LANDING": [
+            { c: "ECAM MEMO", r: "LDG NO BLUE" },
+            { c: "LDG GEAR", r: "DOWN" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "CABIN", r: "SECURED FOR LDG" },
+            { c: "SPOILERS", r: "ARMED" },
+            { c: "FLAPS", r: "3 OR FULL CONFIG" },
+            { c: "RUNWAY", r: "CONFIRMED" }
+          ],
+          "PARKING": [
+            { c: "RADAR & PRED W/S", r: "OFF" },
+            { c: "PARKING BRAKE", r: "ON" },
+            { c: "ENGINES", r: "OFF" },
+            { c: "EXTERNAL LIGHTS", r: "OFF" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "Y ELEC PUMP", r: "OFF" },
+            { c: "PED", r: "AS RQRD" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "ADIRS", r: "OFF" },
+            { c: "OXYGEN", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "EFBS", r: "AS RQRD" },
+            { c: "BATTERIES", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "a330_a340",
+        manufacturer: "Airbus",
+        name: "Airbus A330 / A340",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "GEAR PINS and COVERS", r: "REMOVED" },
+            { c: "PAX SIGNS", r: "ON/AUTO" },
+            { c: "ADIRS", r: "NAV" },
+            { c: "FUEL QUANTITY", r: "BALANCED" },
+            { c: "T/O DATA", r: "SET" },
+            { c: "BARO REF", r: "QNH (BOTH)" }
+          ],
+          "BEFORE START": [
+            { c: "WINDOWS/DOORS", r: "CLOSED (BOTH)" },
+            { c: "BEACON", r: "ON" },
+            { c: "THRUST LEVERS", r: "IDLE" },
+            { c: "PARKING BRAKE", r: "AS RQRD" }
+          ],
+          "AFTER START": [
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "ECAM STATUS", r: "CHECKED" },
+            { c: "PITCH TRIM", r: "% UP/DN SET" },
+            { c: "RUDDER TRIM", r: "NEUTRAL" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "FLIGHT INSTRUMENTS", r: "CHECKED" },
+            { c: "BRIEFING", r: "CONFIRMED" },
+            { c: "FLAPS", r: "CONF" },
+            { c: "T/O DATA", r: "CONFIRMED" },
+            { c: "ECAM MEMO", r: "T/O NO BLUE" },
+            { c: "EFB", r: "AS RQRD" }
+          ],
+          "LINE UP": [
+            { c: "CABIN", r: "SECURED FOR T/O" },
+            { c: "T/O RWY", r: "CONFIRMED" },
+            { c: "TCAS", r: "TA/RA" },
+            { c: "PACKS 1 & 2", r: "AS RQRD" }
+          ],
+          "AFTER TAKEOFF / CLIMB": [
+            { c: "LANDING GEAR", r: "UP" },
+            { c: "FLAPS", r: "RET." },
+            { c: "PACKS", r: "ON" },
+            { c: "BARO REF", r: "QNH (BOTH)" }
+          ],
+          "APPROACH": [
+            { c: "BRIEFING", r: "CONFIRMED" },
+            { c: "ECAM STATUS", r: "CHECKED" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "BARO REF", r: "QNH (BOTH)" },
+            { c: "MINIMUMS", r: "BARO/DH SET" },
+            { c: "AUTO BRAKE", r: "AS RQRD" },
+            { c: "EFB", r: "AS RQRD" }
+          ],
+          "LANDING": [
+            { c: "A/THR", r: "AS RQRD" },
+            { c: "ECAM MEMO", r: "LDG NO BLUE" },
+            { c: "LDG GEAR", r: "DOWN" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "CABIN", r: "SECURED FOR LDG" },
+            { c: "SPOILERS", r: "ARMED" },
+            { c: "FLAPS", r: "3 OR FULL CONFIG" },
+            { c: "RUNWAY", r: "CONFIRMED" }
+          ],
+          "PARKING": [
+            { c: "APU BLEED", r: "ON" },
+            { c: "ENGINES", r: "OFF" },
+            { c: "PAX SIGNS", r: "OFF/AUTO" },
+            { c: "EXTERNAL LIGHTS", r: "AS RQRD" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "PARKING BRAKE", r: "ON" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "ADIRS", r: "OFF" },
+            { c: "OXYGEN", r: "OFF" },
+            { c: "APU BLEED", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "PAX SIGNS", r: "OFF" },
+            { c: "APU AND BATT", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "avro_rj",
+        manufacturer: "BAe Systems",
+        name: "Avro RJ Series",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "CIRCUIT BREAKERS", r: "CHECKED IN" },
+            { c: "RADAR", r: "OFF" },
+            { c: "ELECTRIC/GPU/APU", r: "SET" },
+            { c: "PANELS & PEDESTAL", r: "CHECKED" },
+            { c: "OXYGEN VALVE AND PRESSURE", r: "CHECKED" },
+            { c: "CREW AT STATION", r: "CHECKED" },
+            { c: "PINS & COVERS", r: "ON BOARD" },
+            { c: "AIRCRAFT LOG", r: "CHECKED" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "FUEL QUANTITY & FLOW METERS", r: "CHECKED" },
+            { c: "ALTIMETERS", r: "CHECKED" },
+            { c: "PRESSURIZATION", r: "CHECKED" },
+            { c: "IRS", r: "SET" },
+            { c: "FMS", r: "SET" },
+            { c: "FLIGHT GUIDANCE", r: "CHECKED" },
+            { c: "T/O DATA", r: "CHECKED" },
+            { c: "TRIMS", r: "SET" },
+            { c: "T/O BRIEFING", r: "CHECKED" }
+          ],
+          "BEFORE ENGINE START": [
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "PACKS & APU AIR", r: "OFF" },
+            { c: "BEACON", r: "ON" },
+            { c: "FUEL PANEL", r: "SET" },
+            { c: "DOORS/WINDOWS", r: "CLOSED" },
+            { c: "SLIDES", r: "ARMED" },
+            { c: "TCAS", r: "TA/RA" }
+          ],
+          "AFTER ENGINE START": [
+            { c: "GENERATORS", r: "ONLINE" },
+            { c: "BRAKE FANS", r: "AUTO" },
+            { c: "HYDRAULICS", r: "ON/AUTO" },
+            { c: "ICE PROTECTION", r: "AS RQRD" },
+            { c: "AIR CONDITION", r: "AS RQRD" },
+            { c: "AUTO-THROTTLE", r: "ARMED" },
+            { c: "FLAPS", r: "SET" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "CLEAR SIGNAL", r: "RECEIVED" }
+          ],
+          "TAXI CHECK": [
+            { c: "THRUST & T/O DATA", r: "RECHECKED" },
+            { c: "FLAPS & SPEEDS", r: "CHECKED" },
+            { c: "T/O BRIEFING", r: "COMPLETED" },
+            { c: "CONFIG", r: "CHECKED" },
+            { c: "MWS", r: "SET" },
+            { c: "CABIN", r: "SECURED" }
+          ],
+          "SYSTEM CHECK / AFTER TAKEOFF": [
+            { c: "ENG AIR", r: "ON" },
+            { c: "APU AIR", r: "OFF" },
+            { c: "LIGHTS", r: "AS RQRD" },
+            { c: "FLAPS", r: "UP" },
+            { c: "GEAR", r: "UP" },
+            { c: "TRP", r: "CLIMB" },
+            { c: "ALTIMETERS", r: "HPA/INCH SET & X-CHECKED" }
+          ],
+          "PREPARATION FOR APPROACH": [
+            { c: "FMS", r: "SET" },
+            { c: "ACTUAL FUEL", r: "CHECKED & NOTED" },
+            { c: "LANDING DATA", r: "SET & CHECKED" },
+            { c: "LANDING FLAPS & STEEP APPROACH", r: "AS RQRD" },
+            { c: "PRESSURIZATION", r: "LAND ALT FT SET" },
+            { c: "BRIEFING", r: "COMPLETED" }
+          ],
+          "AFTER LANDING": [
+            { c: "GUST LOCK/AIRBRAKE", r: "SET/IN" },
+            { c: "RADAR", r: "OFF" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "FLAPS", r: "UP" }
+          ],
+          "PARKING": [
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "SLIDES", r: "DISARMED" },
+            { c: "XPDR/TCAS", r: "STBY" },
+            { c: "HYDRAULICS", r: "OFF" },
+            { c: "GENERATORS", r: "OFF/RESET" },
+            { c: "AIR CONDITIONING", r: "AS RQRD" },
+            { c: "ENGINE SHUTDOWN", r: "PERFORMED" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "EXTERNAL LIGHTS", r: "AS RQRD" },
+            { c: "BRAKE FANS", r: "AS RQRD" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "IGNITION", r: "OFF" },
+            { c: "ICE PROTECTION", r: "AS RQRD" }
+          ],
+          "LEAVING THE AIRCRAFT": [
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "ELEVATOR TRIM", r: "POS 1" },
+            { c: "AVIONICS", r: "OFF" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "AIR CONDITIONING", r: "OFF" },
+            { c: "LIGHTS & NOTICES", r: "OFF" },
+            { c: "APU", r: "OFF" },
+            { c: "ELECTRICS", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "b737_max",
+        manufacturer: "Boeing",
+        name: "Boeing 737 MAX",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "OXYGEN", r: "TESTED 100%" },
+            { c: "NAV. XFR. & DISP. SW", r: "NORMAL, AUTO" },
+            { c: "WINDOW HEAT", r: "ON" },
+            { c: "PRESS MODE SELECTOR", r: "AUTO" },
+            { c: "FLIGHT INSTRUMENTS", r: "HDG, ALT, SET" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "ENGINE START LEVERS", r: "CUTOFF" }
+          ],
+          "BEFORE START": [
+            { c: "FD DOOR", r: "CLOSED & LOCKED" },
+            { c: "FUEL", r: "PUMPS ON" },
+            { c: "PAX SIGNS", r: "ON/AUTO" },
+            { c: "WINDOWS", r: "LOCKED" },
+            { c: "MCP", r: "V2, HDG, ALT SET" },
+            { c: "TAKEOFF SPEEDS", r: "V1, VR, V2" },
+            { c: "FMC PREFLIGHT", r: "COMPLETED" },
+            { c: "RUDDER & AILERON TRIM", r: "FREE & ZERO" },
+            { c: "TAXI & TAKEOFF BRIEFING", r: "COMPLETED" },
+            { c: "ANTI COLLISION LIGHT", r: "ON" }
+          ],
+          "BEFORE TAXI": [
+            { c: "GENERATORS", r: "ON" },
+            { c: "PROBE HEAT", r: "AUTO" },
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "ISOLATION VALVE", r: "AUTO" },
+            { c: "ENGINE START SW", r: "CONT" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTO BRAKE", r: "RTO" },
+            { c: "ENGINE START LEVERS", r: "IDLE DETENT" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED & FREE" },
+            { c: "GROUND EQUIPMENT", r: "CLEAR" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "FLAPS", r: "REQ, GRN LIGHT" },
+            { c: "STAB TRIM", r: "UNITS" },
+            { c: "STROBE LIGHTS", r: "AS RQRD" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "ENGINE BLEEDS", r: "ON" },
+            { c: "PACKS", r: "AUTO" },
+            { c: "LANDING GEAR", r: "UP" },
+            { c: "FLAPS", r: "UP, NO LIGHT" }
+          ],
+          "DESCENT": [
+            { c: "PRESSURIZATION", r: "LDG ALT FT, SET" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTO BRAKE", r: "AS CALCULATED, SET" },
+            { c: "LANDING DATA", r: "VREF MIN" },
+            { c: "APPROACH BRIEFING", r: "COMPLETED" }
+          ],
+          "APPROACH": [
+            { c: "ALTIMETERS", r: "HPA/INHG, SET" },
+            { c: "NAV AIDS", r: "RADIOS & COURSE SET" }
+          ],
+          "LANDING": [
+            { c: "ENGINE START SW", r: "CONT" },
+            { c: "SPEEDBRAKE", r: "ARMED" },
+            { c: "LANDING GEAR", r: "DOWN, 3 GREEN" },
+            { c: "FLAPS", r: "SET, GREEN LIGHT" }
+          ],
+          "SHUTDOWN": [
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "PROBE HEAT", r: "AUTO" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "FLAPS", r: "UP" },
+            { c: "PARKING BRAKE", r: "AS RQRD" },
+            { c: "ENGINE START LEVERS", r: "CUTOFF" },
+            { c: "WEATHER RADAR", r: "OFF" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "IRSS", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "WINDOW HEAT", r: "OFF" },
+            { c: "PACKS", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "b737_ng",
+        manufacturer: "Boeing",
+        name: "Boeing 737 Next Gen",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "OXYGEN", r: "TESTED 100%" },
+            { c: "NAV. XFR. & DISP. SW", r: "NORMAL, AUTO" },
+            { c: "WINDOW HEAT", r: "ON" },
+            { c: "PRESS MODE SELECTOR", r: "AUTO" },
+            { c: "FLIGHT INSTRUMENTS", r: "HDG, ALT, SET" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "ENGINE START LEVERS", r: "CUTOFF" }
+          ],
+          "BEFORE START": [
+            { c: "FD DOOR", r: "CLOSED & LOCKED" },
+            { c: "FUEL", r: "PUMPS ON" },
+            { c: "PAX SIGNS", r: "ON/AUTO" },
+            { c: "WINDOWS", r: "LOCKED" },
+            { c: "MCP", r: "V2, HDG, ALT SET" },
+            { c: "TAKEOFF SPEEDS", r: "V1, VR, V2" },
+            { c: "FMC PREFLIGHT", r: "COMPLETED" },
+            { c: "RUDDER & AILERON TRIM", r: "FREE & ZERO" },
+            { c: "TAXI & TAKEOFF BRIEFING", r: "COMPLETED" },
+            { c: "ANTI COLLISION LIGHT", r: "ON" }
+          ],
+          "BEFORE TAXI": [
+            { c: "GENERATORS", r: "ON" },
+            { c: "PROBE HEAT", r: "OFF or AUTO" },
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "ISOLATION VALVE", r: "AUTO" },
+            { c: "ENGINE START SW", r: "CONT" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTO BRAKE", r: "RTO" },
+            { c: "ENGINE START LEVERS", r: "IDLE DETENT" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED & FREE" },
+            { c: "GROUND EQUIPMENT", r: "CLEAR" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "ENGINE BLEEDS", r: "ON" },
+            { c: "PACKS", r: "AUTO" },
+            { c: "LANDING GEAR", r: "UP & OFF" },
+            { c: "FLAPS", r: "UP, NO LIGHT" }
+          ],
+          "DESCENT": [
+            { c: "PRESSURIZATION", r: "LDG ALT FT, SET" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTO BRAKE", r: "AS CALCULATED, SET" },
+            { c: "LANDING DATA", r: "VREF MIN" },
+            { c: "APPROACH BRIEFING", r: "COMPLETED" }
+          ],
+          "APPROACH": [
+            { c: "ALTIMETERS", r: "HPA/INHG, SET" },
+            { c: "NAV AIDS", r: "RADIOS & COURSE SET" }
+          ],
+          "LANDING": [
+            { c: "ENGINE START SW", r: "CONT" },
+            { c: "SPEEDBRAKE", r: "ARMED" },
+            { c: "LANDING GEAR", r: "DOWN, 3 GREEN" },
+            { c: "FLAPS", r: "SET, GREEN LIGHT" }
+          ],
+          "SHUTDOWN": [
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "PROBE HEAT", r: "OFF or AUTO" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "FLAPS", r: "UP" },
+            { c: "PARKING BRAKE", r: "AS RQRD" },
+            { c: "ENGINE START LEVERS", r: "CUTOFF" },
+            { c: "WEATHER RADAR", r: "OFF" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "IRSS", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "WINDOW HEAT", r: "OFF" },
+            { c: "PACKS", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "b757",
+        manufacturer: "Boeing",
+        name: "Boeing 757 Series",
+        rev: "VER 2-REV 0",
+        checklists: {
+          "PREFLIGHT": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALIZED" },
+            { c: "OXYGEN", r: "TESTED 100%" },
+            { c: "PRESS MODE SELECTOR", r: "AUTO" },
+            { c: "FLIGHT INSTRUMENT", r: "TEST" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "FUEL CONTROL SWITCHES", r: "CUTOFF" },
+            { c: "GEAR PIN", r: "REMOVED" }
+          ],
+          "BEFORE START": [
+            { c: "FUEL", r: "CHECK" },
+            { c: "PAX SIGNS", r: "SET" },
+            { c: "WINDOWS", r: "CLOSED & LOCKED" },
+            { c: "MCP", r: "SET" },
+            { c: "TAKEOFF THRUST", r: "CHECK" },
+            { c: "TAKEOFF SPEEDS", r: "CHECK" },
+            { c: "CDU PREFLIGHT", r: "COMPLETED" },
+            { c: "RUDDER AND AILERON TRIM", r: "SET" },
+            { c: "TAXI AND TAKEOFF BRIEFING", r: "COMPLETED" },
+            { c: "FD DOOR", r: "LOCKED" },
+            { c: "RED ANTI COLLISION LIGHT", r: "ON" }
+          ],
+          "BEFORE TAXI": [
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "ISOLATION VALVE", r: "OFF" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTOBRAKE", r: "RTO" },
+            { c: "GROUND EQUIPMENT", r: "CLEAR" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "PACKS", r: "AUTO/OFF" },
+            { c: "FLAPS", r: "SET" },
+            { c: "STAB TRIM", r: "SET UNITS" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "CABIN", r: "SECURED, CALLED" },
+            { c: "EXTERNAL LIGHTS", r: "AS RQRD" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "PACKS", r: "AUTO" },
+            { c: "LANDING GEAR", r: "UP" },
+            { c: "FLAPS", r: "UP" },
+            { c: "EXTERNAL LIGHTS", r: "AS RQRD" },
+            { c: "ALTIMETERS", r: "SET, X-CHECKED" }
+          ],
+          "DESCENT": [
+            { c: "PRESSURIZATION", r: "LDG ALT FT, SET" },
+            { c: "RECALL", r: "CHECKED" },
+            { c: "AUTO BRAKE", r: "AS CALCULATED, SET" },
+            { c: "LANDING DATA", r: "VREF MIN" },
+            { c: "APPROACH BRIEFING", r: "COMPLETED" }
+          ],
+          "APPROACH": [
+            { c: "ALTIMETERS", r: "SET, X-CHECKED" },
+            { c: "NAV AIDS", r: "SET" }
+          ],
+          "LANDING": [
+            { c: "CABIN", r: "SECURED, CALLED" },
+            { c: "SPEEDBRAKE", r: "ARMED" },
+            { c: "LANDING GEAR", r: "DOWN, 3 GREEN" },
+            { c: "FLAPS", r: "SET, GREEN LIGHT" }
+          ],
+          "SHUTDOWN": [
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "FUEL PUMPS", r: "SET" },
+            { c: "FLAPS", r: "UP" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "FUEL CONTROL SWITCHES", r: "CUTOFF" },
+            { c: "WEATHER RADAR", r: "OFF" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "IRS SELECTORS", r: "OFF" },
+            { c: "EMERGENCY EXIT LTS", r: "OFF" },
+            { c: "WINDOW HEAT", r: "OFF" },
+            { c: "PACKS", r: "OFF" },
+            { c: "EXTERNAL POWER", r: "SET" },
+            { c: "APU SELECTOR", r: "OFF" },
+            { c: "STANDBY POWER", r: "OFF" },
+            { c: "BATTERY", r: "OFF" },
+            { c: "GROUND SERVICE BUS", r: "CHECK" }
+          ]
+        }
+      },
+      {
+        id: "crj",
+        manufacturer: "Bombardier",
+        name: "Bombardier CRJ Series",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "COCKPIT PREPARATION", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "OXYGEN MASKS", r: "CHECKED" },
+            { c: "OVERHEAD PANEL", r: "CHECKED" },
+            { c: "FIRE DET/EXT PANEL", r: "CHECKED & TESTED" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "HYDRAULIC PANEL", r: "CHECKED, AUTO, 3A ON" },
+            { c: "ELT SWITCH", r: "ARM/RESET" },
+            { c: "AIR CONDITIONING PANEL", r: "CHECKED" },
+            { c: "ANTI ICE PANEL", r: "AS RQRD" },
+            { c: "WINDSHIELD HEAT", r: "AS RQRD" },
+            { c: "EMER EXIT LIGHTS", r: "ARMED" },
+            { c: "AVIONICS & RADIOS", r: "CHECKED" },
+            { c: "TRIMS", r: "CHECKED" },
+            { c: "YAW DAMPERS", r: "ENGAGED" },
+            { c: "SOURCE SEL PANEL", r: "NORM" }
+          ],
+          "BEFORE START": [
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "DOORS", r: "CLOSED & LOCKED" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "LDG ELEV", r: "FT SET" },
+            { c: "ALTIMETERS", r: "HPA/INHG SET" },
+            { c: "T/O DATA", r: "SET & CONFIRMED" },
+            { c: "FMS", r: "SET" },
+            { c: "IRS", r: "SET" },
+            { c: "NAVAIDS", r: "SET" },
+            { c: "T/O BRIEFING", r: "PERFORMED" },
+            { c: "BEACON", r: "ON" }
+          ],
+          "AFTER START": [
+            { c: "GENERATORS", r: "AUTO" },
+            { c: "BLEED VALVES", r: "AUTO" },
+            { c: "PACKS", r: "ON" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "ANTI ICE", r: "AS RQRD" },
+            { c: "N/W STEERING", r: "ARMED" }
+          ],
+          "TAXI": [
+            { c: "SLATS/FLAPS", r: "SET" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "TRIMS", r: "GREEN & UNITS" },
+            { c: "THRUST REVERSERS", r: "ARMED" },
+            { c: "FLIGHT INSTRUMENTS", r: "CHECKED" },
+            { c: "BRAKE TEMP", r: "CHECKED" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "LIGHTS & STROBES", r: "ON" },
+            { c: "FUEL X-FLOW", r: "MANUAL" },
+            { c: "CONT IGNITION", r: "AS RQRD" },
+            { c: "CABIN", r: "ADVISED" },
+            { c: "TRANSPONDER", r: "TCAS ON, SET" },
+            { c: "RADAR/TERR DISPLAY", r: "AS RQRD" },
+            { c: "CAS", r: "CHECKED" }
+          ],
+          "CLIMB": [
+            { c: "FUEL X-FLOW", r: "AUTO" },
+            { c: "CONT IGNITION", r: "AS RQRD" },
+            { c: "BLEEDS & APU", r: "SET" },
+            { c: "THRUST REVERSERS", r: "OFF" },
+            { c: "CAS", r: "CHECKED" }
+          ],
+          "DESCENT": [
+            { c: "LDG ELEV", r: "FT SET" },
+            { c: "FUEL", r: "CHECKED" },
+            { c: "TCAS", r: "SET" },
+            { c: "RADAR", r: "AS RQRD" },
+            { c: "LANDING DATA", r: "SET" },
+            { c: "APPROACH BRIEFING", r: "PERFORMED" }
+          ],
+          "BEFORE LANDING": [
+            { c: "CABIN", r: "ADVISED" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "THRUST REVERSERS", r: "ARMED" },
+            { c: "FLAPS", r: "SET" },
+            { c: "LANDING GEAR", r: "DOWN" },
+            { c: "RUNWAY", r: "CONFIRMED" }
+          ],
+          "AFTER LANDING": [
+            { c: "APU", r: "AS RQRD" },
+            { c: "TRANSPONDER/RADAR", r: "STBY/OFF" },
+            { c: "FLAPS", r: "UP/ZERO" },
+            { c: "LIGHTS & STROBES", r: "OFF" },
+            { c: "PROBES", r: "OFF" }
+          ],
+          "SHUTDOWN": [
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "THRUST LEVERS", r: "SHUT OFF" },
+            { c: "ANTI ICE", r: "OFF" },
+            { c: "FUEL PUMPS", r: "OFF" },
+            { c: "BEACON", r: "OFF" },
+            { c: "N/W STEERING", r: "OFF" }
+          ],
+          "LEAVING THE AIRCRAFT": [
+            { c: "CHOCKS & BRAKES", r: "IN/OFF" },
+            { c: "IRS", r: "OFF" },
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "ANTI ICE", r: "OFF" },
+            { c: "HYDRAULIC PANEL", r: "OFF" },
+            { c: "EXTERNAL LIGHTS", r: "OFF" },
+            { c: "APU", r: "OFF" },
+            { c: "BATTERY MASTER", r: "OFF" },
+            { c: "COCKPIT LIGHTS", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "ejets",
+        manufacturer: "Embraer",
+        name: "Embraer E-Jets",
+        rev: "VER 3-REV 5",
+        checklists: {
+          "POWER UP": [
+            { c: "BATTERIES", r: "ON" },
+            { c: "GPU AVAIL", r: "AS RQRD" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "NAV LIGHT", r: "ON" },
+            { c: "LOGO LIGHT", r: "AS RQRD" },
+            { c: "EMER LIGHT", r: "ARMED" },
+            { c: "FUEL QANTITY", r: "CHECKED" },
+            { c: "ALTIMETERS", r: "SET" },
+            { c: "TAKEOFF DATA", r: "CONFIRMED" }
+          ],
+          "START UP": [
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "BEACON", r: "ON" },
+            { c: "ELEC PUMP A", r: "ON" },
+            { c: "ENGINE 1/2", r: "START" }
+          ],
+          "AFTER START UP": [
+            { c: "APU", r: "AS RQRD" },
+            { c: "FLAPS", r: "SET" },
+            { c: "TRIM", r: "SET" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "AUTOBRAKE", r: "RTO" },
+            { c: "ANTI ICE", r: "AS RQRD" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "APU", r: "AS RQRD" },
+            { c: "STROBE LIGHT", r: "ON" },
+            { c: "LANDING LIGHT", r: "ON" },
+            { c: "TRANSPONDER", r: "TA/RA" },
+            { c: "T/O CONFIG", r: "CHECKED" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "LANDING GEAR", r: "UP" },
+            { c: "APU", r: "OFF" },
+            { c: "SLATS/FLAPS", r: "UP" },
+            { c: "ALTIMETERS", r: "STD" }
+          ],
+          "DESCENT": [
+            { c: "EXTERNAL LIGHTS", r: "SET" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "LANDING DATA", r: "REVIEWED" },
+            { c: "AUTOBRAKE", r: "SET" },
+            { c: "APPROACH BRIEFING", r: "COMPLETE" },
+            { c: "ALTIMETER", r: "SET" }
+          ],
+          "BEFORE LANDING": [
+            { c: "FLIGHT ATTENDANTS", r: "NOTIFIED" },
+            { c: "LANDING GEAR", r: "DOWN 3 GREEN" },
+            { c: "FLAPS", r: "SET" },
+            { c: "LANDING LIGHT", r: "ON" }
+          ],
+          "AFTER LANDING": [
+            { c: "EXTERNAL LIGHTS", r: "AS RQRD" },
+            { c: "FLAPS", r: "UP" },
+            { c: "TRIM", r: ".4 UP, CENTERED" },
+            { c: "APU", r: "START" }
+          ],
+          "SHUTDOWN": [
+            { c: "TRANSPONDER", r: "OFF" },
+            { c: "CHOCKS AND BRAKES", r: "SET" },
+            { c: "ENGINES 1/2", r: "OFF" },
+            { c: "HYDRAULIC PUMP A", r: "OFF" }
+          ],
+          "LEAVING THE AIRPLANE": [
+            { c: "APU", r: "AS RQRD" },
+            { c: "PAX SIGNS PANEL", r: "OFF" },
+            { c: "GPU/APU", r: "OFF" },
+            { c: "BATTERY 1 & 2", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "f28",
+        manufacturer: "Fokker",
+        name: "Fokker F28 Fellowship",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "PREFLIGHT": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "GPU", r: "AS RQRD" },
+            { c: "EXTERNAL LIGHTS", r: "SET AS RQRD" },
+            { c: "EMER EXIT LIGHTS", r: "ARMED" },
+            { c: "WINDSHIELD HEATING", r: "LOW" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "MASTER RADIOS", r: "ON" },
+            { c: "RADIOS/COMMS", r: "SET" },
+            { c: "THRUST INDEX", r: "SET" },
+            { c: "GENERATORS 1 & 2", r: "AS RQRD" },
+            { c: "TRU 1 & 2", r: "ON/IN LINE" },
+            { c: "STARTER MASTER", r: "OFF" },
+            { c: "IGNITION", r: "NORMAL" },
+            { c: "AIR COND TEMP SEL", r: "AUTO" },
+            { c: "BLEED AIR LPs", r: "AUTO" },
+            { c: "BLEED AIR MAINS", r: "ON" },
+            { c: "AIRFOIL ANTI ICE MAINS", r: "OFF/RESET" },
+            { c: "AIRFOIL ANTI ICE SEL", r: "RH NORMAL" },
+            { c: "ENGINE ANTI ICE SEL", r: "OFF" },
+            { c: "FUEL SHUT-OFF VALVES", r: "OPEN" },
+            { c: "FUEL PUMPS", r: "NORMAL" },
+            { c: "TTC SWITCHES", r: "T/OFF" },
+            { c: "FUEL QUANTITY", r: "BALANCED" },
+            { c: "NWS", r: "ON" },
+            { c: "HYDRAULICS", r: "ON" },
+            { c: "TRANSPONDER", r: "SET & STBY" },
+            { c: "ALTIMETERS", r: "SET & X-CHECKED" },
+            { c: "PRESSURIZATION CONTROLLER", r: "SET" },
+            { c: "GENERATOR 3", r: "OFF" },
+            { c: "APU AIR", r: "OFF" },
+            { c: "APU MAIN", r: "ON" },
+            { c: "AIR COND MAIN (R/L)", r: "R-ON/L-OFF" },
+            { c: "APU", r: "START" },
+            { c: "GENERATOR 3", r: "ON" },
+            { c: "APU AIR", r: "ON" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "GPU", r: "OFF & DISCONNECTED" },
+            { c: "CHOCKS", r: "REMOVED" },
+            { c: "DOORS/WINDOWS", r: "CLOSED" },
+            { c: "GROUND EQUIPMENT", r: "CLEAR" },
+            { c: "PUSHBACK", r: "CONNECTED" },
+            { c: "ANTI COLLISION LIGHT", r: "ON" }
+          ],
+          "BEFORE START": [
+            { c: "THRUST LEVERS", r: "DETENT" },
+            { c: "HP FUEL VALVES", r: "SHUT" },
+            { c: "FUEL BOOSTER PUMPS", r: "ON" },
+            { c: "STARTER MASTER", r: "ON" }
+          ],
+          "AFTER START": [
+            { c: "STARTER MASTER", r: "OFF" },
+            { c: "GENERATOR 3", r: "OFF" },
+            { c: "APU AIR", r: "OFF" },
+            { c: "AIR CONDITION MAINS", r: "BOTH ON" },
+            { c: "ENGINE ANTI ICE SEL", r: "AUTO/LOW" },
+            { c: "PITOT & VANE HEAT", r: "ON" }
+          ],
+          "BEFORE TAXI": [
+            { c: "FLAPS", r: "SET" },
+            { c: "TRIM", r: "SET" },
+            { c: "APU", r: "STOP" },
+            { c: "APU MAIN", r: "OFF" },
+            { c: "LIFT DUMPERS", r: "ARMED" },
+            { c: "YAW DAMPING", r: "IN" },
+            { c: "CONTROL LOCK", r: "OFF" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "FLIGHT INSTRUMENTS", r: "CHECKED" },
+            { c: "TAXI LIGHT", r: "ON" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "EXTERNAL LIGHTS", r: "SET" },
+            { c: "CONTROL LOCK OFF", r: "CONFIRMED" },
+            { c: "FLAPS", r: "SET & CHECKED" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "LANDING GEAR", r: "UP" },
+            { c: "FLAPS", r: "UP" },
+            { c: "LIFT DUMPERS", r: "IN" },
+            { c: "TTC SWITCHES", r: "CLIMB" },
+            { c: "TAXI LIGHT", r: "OFF" },
+            { c: "ENGINE ANTI ICE", r: "AUTO/ON" }
+          ],
+          "CLIMB": [
+            { c: "ALTIMETERS", r: "STD & X-CHECKED" },
+            { c: "LANDING LIGHTS", r: "OFF AT 10.000 FT" },
+            { c: "FLARE OUT LIGHTS", r: "OFF AT 10.000 FT" },
+            { c: "PAX SIGNS", r: "AS RQRD" }
+          ],
+          "DESCENT": [
+            { c: "PRESSURIZATION", r: "SET AT FIELD ELEV." },
+            { c: "TTC SWITCHES", r: "T/OFF" },
+            { c: "LANDING DATA", r: "BUGS SET" },
+            { c: "LANDING LIGHTS", r: "EXTENDED AT 10.000 FT, ON" },
+            { c: "FLARE OUT LIGHTS", r: "ON AT 10.000 FT" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "ALTIMETERS", r: "SET & X-CHECKED" },
+            { c: "M.A.P.", r: "CHECKED & SET" }
+          ],
+          "BEFORE LANDING": [
+            { c: "LANDING GEAR", r: "DOWN" },
+            { c: "LIFT DUMPERS", r: "ARMED" },
+            { c: "FLAPS", r: "SET" },
+            { c: "GO AROUND ALTITUDE", r: "SET" }
+          ],
+          "AFTER LANDING": [
+            { c: "TAXI LIGHTS", r: "ON" },
+            { c: "LANDING LIGHTS", r: "OFF" },
+            { c: "FLARE OUT LIGHTS", r: "OFF" },
+            { c: "APU", r: "ON" },
+            { c: "SPEEDBRAKE", r: "IN" },
+            { c: "LIFT DUMPERS", r: "IN" },
+            { c: "FLAPS", r: "UP" },
+            { c: "AIRFOIL ANTI ICE MAINS", r: "OFF" },
+            { c: "ENGINE ANTI ICE SEL", r: "OFF" },
+            { c: "ENGINE ANTI ICING", r: "OFF" },
+            { c: "PITOT & VANE HEAT", r: "OFF" },
+            { c: "WINDSHIELD HEAT", r: "OFF" },
+            { c: "GENERATOR 3", r: "ON" },
+            { c: "YAW DAMPING", r: "OFF" },
+            { c: "CONTROL LOCK", r: "ON" }
+          ],
+          "SHUTDOWN": [
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "HP FUEL VALVE LEVERS", r: "SHUT" },
+            { c: "PAX SIGNS", r: "OFF" },
+            { c: "AIR CONDITION MAINS", r: "OFF" },
+            { c: "GENERATORS 1 & 2", r: "OFF" },
+            { c: "FUEL BOOSTER PUMPS", r: "OFF" },
+            { c: "ANTI COLLISION LIGHT", r: "OFF" },
+            { c: "TRANSPONDER", r: "OFF/STBY" }
+          ]
+        }
+      },
+      {
+        id: "md11",
+        manufacturer: "McDonnell Douglas",
+        name: "McDonnell Douglas MD-11",
+        rev: "VER 2-REV 1",
+        checklists: {
+          "COCKPIT PREPARATION": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "EVAC COMMAND", r: "ARM" },
+            { c: "GLARESHIELD", r: "SET / HPA/INHG" },
+            { c: "NAV EQUIPMENT", r: "CHECKED" },
+            { c: "OXYGEN SYSTEM/MASK", r: "CHECKED/100%" },
+            { c: "IRS", r: "NAV" },
+            { c: "T/O WARNING SYS/GPWS", r: "CHECKED" },
+            { c: "STATUS", r: "CHECKED" },
+            { c: "RUDDER/ALL TRIM", r: "SET" },
+            { c: "FMS", r: "SET" },
+            { c: "FLAP T/O SEL", r: "SET" },
+            { c: "ALTIMETERS", r: "SET/X-CHECKED" },
+            { c: "SEAT BELT SIGNS", r: "AUTO or ON" },
+            { c: "EXTERIOR LIGHTS", r: "SET" }
+          ],
+          "BEFORE START": [
+            { c: "PARKING BRAKE", r: "ON" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "DOORS/WINDOWS", r: "CLOSED" },
+            { c: "HYD AUX PUMP 1", r: "ON" },
+            { c: "TRANSPONDER/BEACON", r: "XPDR/ON" },
+            { c: "ENGINE IGNITION", r: "A or B" }
+          ],
+          "BEFORE TAXI": [
+            { c: "APU", r: "OFF" },
+            { c: "FLAPS", r: "FLAPS" },
+            { c: "SPOILERS", r: "ARMED" },
+            { c: "AUTO BRAKE", r: "T.O." },
+            { c: "STAB TRIM", r: "SET, GRN BAND" },
+            { c: "GROUND EQUIPMENT", r: "REMOVED" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "TAKEOFF DATA", r: "CHECKED" },
+            { c: "EAD", r: "CHECKED" },
+            { c: "CABIN", r: "READY" },
+            { c: "EXT LIGHTS", r: "SET" },
+            { c: "RADAR/TRANSPONDER", r: "SET" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "GEAR", r: "UP/LIGHTS OFF" },
+            { c: "SPOILERS", r: "DISARMED" },
+            { c: "AUTO BRAKE", r: "OFF" },
+            { c: "FLAPS/SLATS", r: "UP/RETRACTED" },
+            { c: "EAD", r: "CHECKED" },
+            { c: "ALTIMETERS", r: "SET/X-CHECKED" }
+          ],
+          "DESCENT": [
+            { c: "STATUS", r: "CHECKED" },
+            { c: "LANDING DATA", r: "CHECKED/SET" },
+            { c: "WINDSHIELD ANTI ICE", r: "AS RQRD" },
+            { c: "DESCENT LIMIT", r: "SET" }
+          ],
+          "APPROACH": [
+            { c: "PREPARE FOR LDG", r: "ANNOUNCED" },
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "MINIMUMS", r: "SET" },
+            { c: "EXTERIOR LIGHTS", r: "SET" },
+            { c: "ALTIMETERS", r: "SET/X-CHECKED" }
+          ],
+          "LANDING": [
+            { c: "SECURE CABIN", r: "ANNOUNCED" },
+            { c: "GEAR", r: "DOWN/3 GREEN" },
+            { c: "SPOILERS", r: "ARMED" },
+            { c: "AUTO BRAKE", r: "SET" },
+            { c: "ALTIMETERS", r: "SET/X-CHECKED" },
+            { c: "FLAPS", r: "FLAPS" },
+            { c: "EAD", r: "CHECKED" },
+            { c: "FCP", r: "SET" }
+          ],
+          "TAXI IN": [
+            { c: "SPOILERS", r: "RETRACTED" },
+            { c: "FLAPS/SLATS", r: "UP/RETRACTED" },
+            { c: "RADAR/TRANSPONDER", r: "OFF" },
+            { c: "AUTO BRAKE", r: "OFF" },
+            { c: "STAB TRIM", r: "3° ANU" },
+            { c: "EXTERIOR LIGHTS", r: "SET" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "TAIL FUEL QUANTITY", r: "CHECKED" }
+          ],
+          "AFTER PARKING": [
+            { c: "FUEL SWITCHES", r: "OFF" },
+            { c: "TRANSPONDER", r: "STBY" },
+            { c: "PAX SIGNS", r: "OFF" },
+            { c: "EXTERIOR LIGHTS", r: "SET" },
+            { c: "OPEN DOORS", r: "ANNOUNCED" },
+            { c: "IRS", r: "AS RQRD" },
+            { c: "EMER PWR", r: "OFF" },
+            { c: "WINDSHIELD ANTI ICE", r: "OFF" },
+            { c: "STATUS", r: "CHECKED" },
+            { c: "PARKING BRAKE", r: "AS RQRD" }
+          ],
+          "LEAVING THE AIRCRAFT": [
+            { c: "EMER EXIT LIGHTS", r: "OFF" },
+            { c: "APU", r: "OFF" },
+            { c: "BATTERIES", r: "OFF" }
+          ]
+        }
+      },
+      {
+        id: "l1011",
+        manufacturer: "Lockheed",
+        name: "Lockheed L-1011 TriStar",
+        rev: "VER 1-REV 1",
+        checklists: {
+          "PILOT SYSTEMS": [
+            { c: "A/C ACCEPTANCE", r: "COMPLETED" },
+            { c: "ACARS", r: "INITIALISED" },
+            { c: "FLIGHT DIRECTOR", r: "CHECKED" },
+            { c: "INSTRUMENTS", r: "CHECKED" },
+            { c: "AFCS WARNING & MODE ANNUN.", r: "CHECKED" },
+            { c: "RADIOS", r: "CHECKED" },
+            { c: "RADAR", r: "CHECKED" },
+            { c: "GPWS", r: "CHECKED" },
+            { c: "ENGINE ANTI ICE", r: "AS RQRD" },
+            { c: "PITOT, ALPHA & WINDSHIELD HEAT", r: "ON" },
+            { c: "START IGNITION", r: "BOTH" },
+            { c: "ANNUNCIATORS", r: "CHECKED" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "ELECTRICAL PANEL", r: "SET" },
+            { c: "FUEL PANEL", r: "SET" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "OXYGEN MASKS", r: "TESTED 100%" },
+            { c: "MSU", r: "ALIGN" },
+            { c: "COMPASSES", r: "MAG & SYNC" },
+            { c: "ANTISKID", r: "CHECKED & OFF" },
+            { c: "EMER EXIT LIGHTS & STBY POWER", r: "ARMED" },
+            { c: "PAX SIGNS", r: "AS RQRD" },
+            { c: "AFCS PANEL", r: "SET" },
+            { c: "ANNUNCIATORS", r: "CHECKED" },
+            { c: "ENGINE INSTRUMENTS", r: "CHECKED" },
+            { c: "BRAKE SYSTEM", r: "NORMAL" },
+            { c: "RADIOS & RADAR", r: "SET" },
+            { c: "INS", r: "CHECKED & SET" },
+            { c: "THROTTLE QUADRANT", r: "CHECKED IDLE" },
+            { c: "LANDING GEAR", r: "CONFIRMED DOWN 3 GRN" },
+            { c: "TRIM", r: "ZERO" },
+            { c: "FUEL QUANTITY", r: "CHECKED BALANCED" },
+            { c: "FIRE WARNINGS & OVERHEAT", r: "CHECKED" },
+            { c: "ELECTRICAL PANEL", r: "SET" },
+            { c: "BATTERY SWITCH", r: "ON" },
+            { c: "FUEL PANEL", r: "SET" },
+            { c: "PRESSURIZATION", r: "SET & NORMAL" }
+          ],
+          "START": [
+            { c: "MSU", r: "NAV" },
+            { c: "ANTI COLLISION LIGHT", r: "ON" },
+            { c: "PARKING BRAKE", r: "SET" },
+            { c: "ELECTRICAL PANEL", r: "SET" },
+            { c: "FUEL PANEL & WEIGHTS", r: "SET & CHECKED" },
+            { c: "APU", r: "MIN MODE" },
+            { c: "PACK FLOW", r: "ONE PACK ON" }
+          ],
+          "BEFORE START": [
+            { c: "BRAKE SYSTEM", r: "CHECKED" }
+          ],
+          "AFTER START": [
+            { c: "CONTINUOUS IGNITION", r: "AS RQRD" },
+            { c: "FLAPS/SLATS", r: "SET, GRN LIGHT" },
+            { c: "STAB TRIM", r: "SET UNITS" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "FLIGHT & NAV INSTRUMENTS", r: "SET" },
+            { c: "TAKEOFF DATA", r: "CHECKED & SET" },
+            { c: "BRIEFING", r: "CONFIRMED" },
+            { c: "ATM'S", r: "CHECKED AUTO" },
+            { c: "APU", r: "AS RQRD" },
+            { c: "CABIN", r: "INFORMED" },
+            { c: "EXTERNAL LIGHTS", r: "SET" },
+            { c: "ANTISKID", r: "ON" },
+            { c: "ALPHA HEAT OFF LIGHTS", r: "OUT" },
+            { c: "TRANSPONDER", r: "SET & ON" },
+            { c: "PACK FLOW", r: "AS RQRD" }
+          ],
+          "BEFORE TAKEOFF": [
+            { c: "FLAPS/SLATS", r: "SET, GRN LIGHT" },
+            { c: "STAB TRIM", r: "SET UNITS" }
+          ],
+          "AFTER TAKEOFF": [
+            { c: "LANDING GEAR", r: "UP & NEUTRAL" },
+            { c: "FLAPS & SLATS", r: "UP & RETRACTED" },
+            { c: "CONTINUOUS IGNITION", r: "AS RQRD" },
+            { c: "CABIN SIGNS", r: "AS RQRD" },
+            { c: "TEMP PROBE HEAT", r: "CHECKED ON" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "FUEL PANEL", r: "SET" },
+            { c: "ECS PANEL", r: "CHECKED" },
+            { c: "APU", r: "OFF" }
+          ],
+          "DESCENT": [
+            { c: "FLIGHT INSTRUMENTS", r: "CHECKED" },
+            { c: "LANDING DATA", r: "CHECKED & ON" },
+            { c: "ANNUNCIATORS", r: "RECALL" },
+            { c: "BRIEFING", r: "CONFIRMED" },
+            { c: "ECS PANEL", r: "SET" }
+          ],
+          "APPROACH": [
+            { c: "PAX SIGNS", r: "ON" },
+            { c: "EXTERIOR LIGHTS", r: "AS RQRD" },
+            { c: "ALTIMETERS", r: "SET & CHECKED" },
+            { c: "FLAPS/SLATS", r: "SET" },
+            { c: "RAD/NAV", r: "RADIO" },
+            { c: "FUEL PANEL", r: "SET & CHECKED" }
+          ],
+          "LANDING": [
+            { c: "ALTIMETER", r: "SET CONFIRMED" },
+            { c: "LANDING GEAR", r: "DOWN 3 GRN" },
+            { c: "CONTINUOUS IGNITION", r: "AS RQRD" },
+            { c: "CABIN", r: "INFORMED" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "BRAKE SYSTEM & ANTISKID", r: "CHECKED" },
+            { c: "FLAPS", r: "SET" },
+            { c: "DLC/ALPHA", r: "CHECKED" }
+          ],
+          "AFTER LANDING": [
+            { c: "ANTI ICE", r: "OFF" },
+            { c: "WINDSHIELD HEAT", r: "IDLE" },
+            { c: "AIR DATA SENSOR", r: "OFF" },
+            { c: "CONTINUOUS IGNITION", r: "OFF" },
+            { c: "ANTISKID", r: "OFF" },
+            { c: "EXTERIOR LIGHTS", r: "AS RQRD" },
+            { c: "SPEED BRAKE LEVER", r: "FORWARD" },
+            { c: "FLAPS/SLATS", r: "UP & RETRACTED" },
+            { c: "TRIM", r: "ZERO" },
+            { c: "RADAR & TRANSPONDER", r: "STANDBY" },
+            { c: "ELECTRICAL PANEL", r: "SET" },
+            { c: "ECS STATUS", r: "CHECKED" },
+            { c: "APU", r: "ON" },
+            { c: "BRAKE SYSTEM", r: "CHECKED" }
+          ],
+          "SHUTDOWN": [
+            { c: "ENGINE RUNDOWN", r: "NORMAL" },
+            { c: "PARKING BRAKE", r: "ON" },
+            { c: "STANDBY POWER", r: "OFF/STANDBY" },
+            { c: "EXTERIOR LIGHTS", r: "AS RQRD" },
+            { c: "PAX SIGNS", r: "OFF" },
+            { c: "MAX INDICATOR", r: "RESET" },
+            { c: "ATM'S", r: "OFF" },
+            { c: "HYDRAULIC PANEL", r: "SET" },
+            { c: "BATTERY SWITCH", r: "OFF" },
+            { c: "FUEL PANEL", r: "SET" },
+            { c: "ECS PANEL", r: "CHECKED" }
+          ],
+          "SECURING THE AIRCRAFT": [
+            { c: "WINDOW HEAT", r: "OFF" },
+            { c: "RADAR", r: "OFF" },
+            { c: "CREW OXYGEN", r: "OFF" },
+            { c: "INTERIOR LIGHTS", r: "DIM/OFF" }
+          ]
+        }
+      }
+    ];
+
+    // STATE STORE
+    let currentAircraftId = null;
+    let checkedState = {}; // { aircraftId: { itemKey: boolean } }
+    let openBlocksState = {}; // { aircraftId: { blockIndex: boolean } }
+
+    // RENDER HOME SCREEN
+    function renderHomeScreen() {
+      const grid = document.getElementById('aircraft-grid');
+      grid.innerHTML = '';
+
+      aircraftData.forEach(ac => {
+        // Calculate progress
+        let totalItems = 0;
+        let checkedItems = 0;
+        const acState = checkedState[ac.id] || {};
+
+        Object.keys(ac.checklists).forEach(blockTitle => {
+          ac.checklists[blockTitle].forEach((item, idx) => {
+            totalItems++;
+            const key = `${blockTitle}_${idx}`;
+            if (acState[key]) checkedItems++;
+          });
+        });
+
+        const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+        const card = document.createElement('div');
+        card.className = 'aircraft-card';
+        card.onclick = () => selectAircraft(ac.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="aircraft-manufacturer">${ac.manufacturer}</div>
+            <div class="aircraft-name">${ac.name}</div>
+            <div class="badge">${ac.rev}</div>
+          </div>
+          <div>
+            <div class="aircraft-meta">
+              <span>Voortgang</span>
+              <span style="font-weight: 700; color: ${percent === 100 ? 'var(--accent-green)' : 'var(--accent-cyan)'}">${percent}%</span>
+            </div>
+            <div class="card-progress">
+              <div class="card-progress-bar" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // SELECT AIRCRAFT
+    function selectAircraft(id) {
+      currentAircraftId = id;
+      const ac = aircraftData.find(a => a.id === id);
+      if (!ac) return;
+
+      document.getElementById('current-aircraft-title').innerText = ac.name;
+      document.getElementById('current-aircraft-sub').innerText = `${ac.manufacturer} • ${ac.rev} • Normal Checklist`;
+
+      document.getElementById('home-view').style.display = 'none';
+      document.getElementById('checklist-view').style.display = 'block';
+      document.getElementById('btn-back').style.display = 'flex';
+
+      // Initialize state for open blocks if not present
+      if (!openBlocksState[id]) {
+        openBlocksState[id] = {};
+        // Default first block open
+        openBlocksState[id][0] = true;
+      }
+
+      renderChecklistBlocks();
+      updateTotalProgress();
+    }
+
+    // SHOW HOME
+    function showHome() {
+      document.getElementById('home-view').style.display = 'block';
+      document.getElementById('checklist-view').style.display = 'none';
+      document.getElementById('btn-back').style.display = 'none';
+      renderHomeScreen();
+    }
+
+    // RENDER CHECKLIST BLOCKS
+    function renderChecklistBlocks() {
+      const container = document.getElementById('blocks-container');
+      container.innerHTML = '';
+
+      const ac = aircraftData.find(a => a.id === currentAircraftId);
+      if (!ac) return;
+
+      const acCheckedState = checkedState[currentAircraftId] || {};
+      const acOpenState = openBlocksState[currentAircraftId] || {};
+
+      const blockTitles = Object.keys(ac.checklists);
+
+      blockTitles.forEach((title, blockIdx) => {
+        const items = ac.checklists[title];
+        let blockCheckedCount = 0;
+
+        items.forEach((item, idx) => {
+          const key = `${title}_${idx}`;
+          if (acCheckedState[key]) blockCheckedCount++;
+        });
+
+        const isCompleted = items.length > 0 && blockCheckedCount === items.length;
+        const isOpen = acOpenState[blockIdx] === true;
+
+        const blockEl = document.createElement('div');
+        blockEl.className = `checklist-block ${isOpen ? 'open' : ''} ${isCompleted ? 'completed' : ''}`;
+        blockEl.id = `block-${blockIdx}`;
+
+        // Header
+        const headerEl = document.createElement('div');
+        headerEl.className = 'block-header';
+        headerEl.onclick = () => toggleBlock(blockIdx);
+
+        headerEl.innerHTML = `
+          <div class="block-title-area">
+            <div class="block-title">${title}</div>
+            <div class="block-counter">${blockCheckedCount}/${items.length}</div>
+          </div>
+          <div class="toggle-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        `;
+
+        // Content
+        const contentEl = document.createElement('div');
+        contentEl.className = 'block-content';
+
+        const table = document.createElement('div');
+        table.className = 'checklist-table';
+
+        items.forEach((item, itemIdx) => {
+          const key = `${title}_${itemIdx}`;
+          const isChecked = acCheckedState[key] === true;
+
+          const row = document.createElement('div');
+          row.className = `checklist-row ${isChecked ? 'checked' : ''}`;
+          row.onclick = (e) => {
+            e.stopPropagation();
+            toggleItem(title, itemIdx);
+          };
+
+          row.innerHTML = `
+            <div class="item-left">
+              <div class="checkbox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="item-challenge">${item.c}</div>
+            </div>
+            <div class="item-response">${item.r}</div>
+          `;
+
+          table.appendChild(row);
+        });
+
+        contentEl.appendChild(table);
+        blockEl.appendChild(headerEl);
+        blockEl.appendChild(contentEl);
+
+        container.appendChild(blockEl);
+      });
+    }
+
+    // TOGGLE BLOCK
+    function toggleBlock(blockIdx) {
+      if (!openBlocksState[currentAircraftId]) openBlocksState[currentAircraftId] = {};
+      openBlocksState[currentAircraftId][blockIdx] = !openBlocksState[currentAircraftId][blockIdx];
+      renderChecklistBlocks();
+    }
+
+    // TOGGLE ALL BLOCKS
+    function toggleAllBlocks(open) {
+      const ac = aircraftData.find(a => a.id === currentAircraftId);
+      if (!ac) return;
+      if (!openBlocksState[currentAircraftId]) openBlocksState[currentAircraftId] = {};
+
+      Object.keys(ac.checklists).forEach((_, idx) => {
+        openBlocksState[currentAircraftId][idx] = open;
+      });
+
+      renderChecklistBlocks();
+    }
+
+    // TOGGLE ITEM
+    function toggleItem(blockTitle, itemIdx) {
+      if (!checkedState[currentAircraftId]) checkedState[currentAircraftId] = {};
+      const key = `${blockTitle}_${itemIdx}`;
+      checkedState[currentAircraftId][key] = !checkedState[currentAircraftId][key];
+
+      renderChecklistBlocks();
+      updateTotalProgress();
+    }
+
+    // UPDATE TOTAL PROGRESS
+    function updateTotalProgress() {
+      const ac = aircraftData.find(a => a.id === currentAircraftId);
+      if (!ac) return;
+
+      let totalItems = 0;
+      let checkedItems = 0;
+      const acState = checkedState[currentAircraftId] || {};
+
+      Object.keys(ac.checklists).forEach(blockTitle => {
+        ac.checklists[blockTitle].forEach((item, idx) => {
+          totalItems++;
+          const key = `${blockTitle}_${idx}`;
+          if (acState[key]) checkedItems++;
+        });
+      });
+
+      const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+      document.getElementById('total-progress-percent').innerText = `${percent}%`;
+      document.getElementById('total-progress-bar').style.width = `${percent}%`;
+    }
+
+    // RESET CURRENT CHECKLIST
+    function resetCurrentChecklist() {
+      if (!currentAircraftId) return;
+      checkedState[currentAircraftId] = {};
+      renderChecklistBlocks();
+      updateTotalProgress();
+    }
+
+    // INIT
+    renderHomeScreen();
+  </script>
+</body>
+</html>
