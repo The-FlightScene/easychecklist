@@ -2034,73 +2034,114 @@
       }
     }
 
-    // JSONP CALLBACK FUNCTION FOR SIMBRIEF (Bypasses CORS restrictions completely)
-    window.simbriefCallback = function(data) {
+    // SIMBRIEF DATA FETCHING
+    // SimBrief's documented endpoint is xml.fetcher.php. The endpoint returns
+    // JSON when json=1 is supplied; it does not use the JSONP callback below.
+    let simbriefRequestController = null;
+    let simbriefRequestNumber = 0;
+
+    function showSimbriefError(message) {
       const infoText = document.getElementById('simbrief-info-text');
-      
-      if (data && data.aircraft && data.aircraft.icaocode) {
-        const rawIcao = data.aircraft.icaocode.toUpperCase().trim();
-        const targetAircraftId = icaoMapping[rawIcao];
+      infoText.innerHTML = `<span style="color:#FF5252">${message}</span>`;
+      activeSimbriefAircraftId = null;
+      renderHomeScreen();
+    }
 
-        const fltNum = (data.general && data.general.flight_number) ? data.general.flight_number : ((data.atc && data.atc.callsign) ? data.atc.callsign : '');
-        const orig = (data.origin && data.origin.icaocode) ? data.origin.icaocode : '';
-        const dest = (data.destination && data.destination.icaocode) ? data.destination.icaocode : '';
+    function applySimbriefData(data) {
+      const infoText = document.getElementById('simbrief-info-text');
+      const rawIcao = data?.aircraft?.icaocode
+        ? String(data.aircraft.icaocode).toUpperCase().trim()
+        : '';
 
-        activeSimbriefAircraftId = targetAircraftId || null;
-
-        if (targetAircraftId) {
-          infoText.innerHTML = `
-            <div class="simbrief-status-tag">
-              VLUCHT: ${fltNum || 'ACTIEF'} (${orig} → ${dest}) | TOESTEL: ${rawIcao}
-            </div>
-          `;
-        } else {
-          infoText.innerHTML = `
-            <div class="simbrief-status-tag" style="background: rgba(255, 179, 0, 0.1); color: var(--accent-amber); border-color: rgba(255, 179, 0, 0.3);">
-              Gevonden ICAO: ${rawIcao} (Geen specifieke checklist gekoppeld)
-            </div>
-          `;
-        }
-      } else {
-        infoText.innerHTML = '<span style="color:#FF5252">Geen actief SimBrief vluchtplan gevonden voor deze gebruiker.</span>';
-        activeSimbriefAircraftId = null;
+      if (!rawIcao) {
+        showSimbriefError('Geen actief SimBrief vluchtplan gevonden. Controleer je Pilot ID/gebruikersnaam en genereer eerst een vluchtplan in SimBrief.');
+        return;
       }
 
-      renderHomeScreen();
-    };
+      const targetAircraftId = icaoMapping[rawIcao];
+      const fltNum = data?.general?.flight_number || data?.atc?.callsign || '';
+      const orig = data?.origin?.icaocode || '';
+      const dest = data?.destination?.icaocode || '';
+      activeSimbriefAircraftId = targetAircraftId || null;
 
-    // FETCH SIMBRIEF VIA JSONP SCRIPT INJECTION
-    function fetchSimbriefData(id) {
+      if (targetAircraftId) {
+        infoText.innerHTML = `
+          <div class="simbrief-status-tag">
+            VLUCHT: ${fltNum || 'ACTIEF'} (${orig} → ${dest}) | TOESTEL: ${rawIcao}
+          </div>`;
+      } else {
+        infoText.innerHTML = `
+          <div class="simbrief-status-tag" style="background: rgba(255, 179, 0, 0.1); color: var(--accent-amber); border-color: rgba(255, 179, 0, 0.3);">
+            Gevonden ICAO: ${rawIcao} (Geen specifieke checklist gekoppeld)
+          </div>`;
+      }
+      renderHomeScreen();
+    }
+
+    async function fetchSimbriefData(id) {
       const infoText = document.getElementById('simbrief-info-text');
-      if (!id || id.trim() === '') {
+      const cleanId = String(id || '').trim();
+      if (!cleanId) {
         activeSimbriefAircraftId = null;
         infoText.innerHTML = '<span>Voer je SimBrief ID in om de actieve vlucht te koppelen.</span>';
         renderHomeScreen();
         return;
       }
 
+      // Cancel an earlier request so a slower response cannot overwrite a newer ID.
+      if (simbriefRequestController) simbriefRequestController.abort();
+      const requestController = new AbortController();
+      simbriefRequestController = requestController;
+      const requestNumber = ++simbriefRequestNumber;
+      const timeout = setTimeout(() => requestController.abort(), 12000);
+
       infoText.innerHTML = '<span><span style="color:var(--accent-cyan)">●</span> SimBrief gegevens ophalen...</span>';
+      activeSimbriefAircraftId = null;
+      renderHomeScreen();
 
-      const cleanId = id.trim();
-      const isNumeric = /^\d+$/.test(cleanId);
-      const queryParam = isNumeric ? `userid=${cleanId}` : `username=${cleanId}`;
+      const paramName = /^\d+$/.test(cleanId) ? 'userid' : 'username';
+      const url = `https://www.simbrief.com/api/xml.fetcher.php?${paramName}=${encodeURIComponent(cleanId)}&json=1`;
 
-      // Verwijder oude script tag als die er is
-      const oldScript = document.getElementById('simbrief-jsonp-script');
-      if (oldScript) oldScript.remove();
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-store',
+          signal: requestController.signal
+        });
+        if (requestNumber !== simbriefRequestNumber) return;
 
-      // Maak nieuwe script tag met callback
-      const script = document.createElement('script');
-      script.id = 'simbrief-jsonp-script';
-      script.src = `https://www.simbrief.com/api/xml.fetch.php?${queryParam}&json=1&jsonp=simbriefCallback`;
-      
-      script.onerror = function() {
-        infoText.innerHTML = '<span style="color:#FF5252">Fout bij verbinding met SimBrief. Controleer je ID of internetverbinding.</span>';
-        activeSimbriefAircraftId = null;
-        renderHomeScreen();
-      };
+        const responseText = await response.text();
+        if (!response.ok) {
+          throw new Error(`SimBrief antwoordde met HTTP ${response.status}.`);
+        }
 
-      document.body.appendChild(script);
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {
+          throw new Error('SimBrief gaf geen geldige JSON terug. Controleer je ID en of er een vluchtplan bestaat.');
+        }
+
+        if (requestNumber !== simbriefRequestNumber) return;
+        // SimBrief can return an error object instead of flight-plan data.
+        if (data?.error || data?.fetch?.status === 'Error') {
+          throw new Error(typeof data.error === 'string' ? data.error : 'Geen vluchtplan gevonden. Genereer eerst een vluchtplan in SimBrief.');
+        }
+        applySimbriefData(data);
+      } catch (error) {
+        if (requestNumber !== simbriefRequestNumber) return;
+        if (error.name === 'AbortError') {
+          showSimbriefError('Ophalen van SimBrief duurde te lang of is geannuleerd. Probeer het opnieuw.');
+        } else if (error instanceof TypeError) {
+          showSimbriefError('Kan SimBrief niet bereiken vanuit deze browser. Controleer je internetverbinding. Als dit blijft gebeuren, kan de browser de aanvraag door CORS blokkeren.');
+        } else {
+          showSimbriefError(error.message || 'Onbekende fout bij het ophalen van SimBrief.');
+        }
+      } finally {
+        clearTimeout(timeout);
+        if (requestNumber === simbriefRequestNumber) simbriefRequestController = null;
+      }
     }
 
     function handleFetchSimbrief() {
