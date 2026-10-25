@@ -136,6 +136,18 @@
       box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
     }
 
+    .btn-danger {
+      background: rgba(255, 82, 82, 0.15);
+      color: #FF5252;
+      border: 1px solid rgba(255, 82, 82, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: #FF5252;
+      color: #000;
+      box-shadow: 0 0 15px rgba(255, 82, 82, 0.4);
+    }
+
     /* MAIN CONTAINER */
     main {
       flex: 1;
@@ -150,8 +162,13 @@
       display: block;
     }
 
-    .hero-title {
+    .hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
       margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .hero-title h1 {
@@ -509,6 +526,10 @@
       padding: 18px 24px;
       text-align: center;
       margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
     }
 
     .footer-brand {
@@ -524,6 +545,12 @@
 
     .footer-brand span {
       color: var(--accent-cyan);
+    }
+
+    .footer-version {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
     }
 
     @media (max-width: 768px) {
@@ -567,9 +594,15 @@
   <main>
     <!-- HOME VIEW -->
     <section id="home-view">
-      <div class="hero-title">
-        <h1>Selecteer Vliegtuig Checklist</h1>
-        <p>Interactieve normaal checklists voor vluchtsimulatie met inklapbare secties.</p>
+      <div class="hero-header">
+        <div class="hero-title">
+          <h1>Selecteer Vliegtuig Checklist</h1>
+          <p>Interactieve normaal checklists voor vluchtsimulatie met inklapbare secties.</p>
+        </div>
+        <button class="btn btn-danger" onclick="resetAllChecklists()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          Reset Alle Checklists
+        </button>
       </div>
       <div class="aircraft-grid" id="aircraft-grid"></div>
     </section>
@@ -606,6 +639,7 @@
     <div class="footer-brand">
       A <span>The FlightScene Sim Solutions</span> Product
     </div>
+    <div class="footer-version">Version 1.0.1</div>
   </footer>
 
   <script>
@@ -753,6 +787,8 @@
             { c: "ECAM STATUS", r: "CHECKED" },
             { c: "PITCH TRIM", r: "% UP/DN SET" },
             { c: "RUDDER TRIM", r: "NEUTRAL" },
+          ],
+          "TAXI": [
             { c: "FLIGHT CONTROLS", r: "CHECKED" },
             { c: "FLAPS", r: "CONF" },
             { c: "FMA", r: "READ AND CHECKED" },
@@ -760,7 +796,7 @@
             { c: "ECAM MEMO", r: "T/O NO BLUE" },
             { c: "EFB", r: "AS RQRD" }
           ],
-          "TAXI": [
+          "BEFORE TAKEOFF": [
             { c: "CABIN", r: "SECURED FOR T/O" },
             { c: "T/O RWY", r: "CONFIRMED" },
             { c: "TCAS", r: "TA/RA" },
@@ -1838,10 +1874,32 @@
       }
     ];
 
-    // STATE STORE
+    // LOCAL STORAGE KEYS
+    const STORAGE_CHECKED_KEY = 'tfss_efb_checked_state_v1';
+    const STORAGE_OPEN_KEY = 'tfss_efb_open_state_v1';
+
+    // STATE STORE WITH LOCALSTORAGE PERSISTENCE
     let currentAircraftId = null;
-    let checkedState = {}; // { aircraftId: { itemKey: boolean } }
-    let openBlocksState = {}; // { aircraftId: { blockIndex: boolean } }
+    let checkedState = loadStorage(STORAGE_CHECKED_KEY, {});
+    let openBlocksState = loadStorage(STORAGE_OPEN_KEY, {});
+
+    function loadStorage(key, fallback) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function saveStorage() {
+      try {
+        localStorage.setItem(STORAGE_CHECKED_KEY, JSON.stringify(checkedState));
+        localStorage.setItem(STORAGE_OPEN_KEY, JSON.stringify(openBlocksState));
+      } catch (e) {
+        console.error("Kon voortgang niet opslaan in localStorage", e);
+      }
+    }
 
     // RENDER HOME SCREEN
     function renderHomeScreen() {
@@ -1849,7 +1907,6 @@
       grid.innerHTML = '';
 
       aircraftData.forEach(ac => {
-        // Calculate progress
         let totalItems = 0;
         let checkedItems = 0;
         const acState = checkedState[ac.id] || {};
@@ -1902,11 +1959,10 @@
       document.getElementById('checklist-view').style.display = 'block';
       document.getElementById('btn-back').style.display = 'flex';
 
-      // Initialize state for open blocks if not present
       if (!openBlocksState[id]) {
         openBlocksState[id] = {};
-        // Default first block open
         openBlocksState[id][0] = true;
+        saveStorage();
       }
 
       renderChecklistBlocks();
@@ -2008,6 +2064,7 @@
     function toggleBlock(blockIdx) {
       if (!openBlocksState[currentAircraftId]) openBlocksState[currentAircraftId] = {};
       openBlocksState[currentAircraftId][blockIdx] = !openBlocksState[currentAircraftId][blockIdx];
+      saveStorage();
       renderChecklistBlocks();
     }
 
@@ -2021,6 +2078,7 @@
         openBlocksState[currentAircraftId][idx] = open;
       });
 
+      saveStorage();
       renderChecklistBlocks();
     }
 
@@ -2030,6 +2088,7 @@
       const key = `${blockTitle}_${itemIdx}`;
       checkedState[currentAircraftId][key] = !checkedState[currentAircraftId][key];
 
+      saveStorage();
       renderChecklistBlocks();
       updateTotalProgress();
     }
@@ -2060,8 +2119,18 @@
     function resetCurrentChecklist() {
       if (!currentAircraftId) return;
       checkedState[currentAircraftId] = {};
+      saveStorage();
       renderChecklistBlocks();
       updateTotalProgress();
+    }
+
+    // RESET ALL CHECKLISTS
+    function resetAllChecklists() {
+      if (confirm("Weet je zeker dat je alle vinkjes van ALLE vliegtuigen wilt wissen?")) {
+        checkedState = {};
+        saveStorage();
+        renderHomeScreen();
+      }
     }
 
     // INIT
