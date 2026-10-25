@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The FlightScene - EFB Normal Checklists</title>
+  <title>The FlightScene - EasyChecklist</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -166,7 +166,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
       gap: 16px;
     }
@@ -183,6 +183,64 @@
       margin-top: 4px;
     }
 
+    /* SIMBRIEF PANEL */
+    .simbrief-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .simbrief-input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .simbrief-input {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      outline: none;
+      width: 180px;
+      transition: border-color 0.2s ease;
+    }
+
+    .simbrief-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    .simbrief-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .simbrief-status-tag {
+      background: rgba(0, 229, 255, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* AIRCRAFT GRID */
     .aircraft-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -223,6 +281,29 @@
 
     .aircraft-card:hover::before {
       background: var(--accent-cyan);
+    }
+
+    /* HIGHLIGHTED CARD FOR SIMBRIEF */
+    .aircraft-card.simbrief-active {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.08) 0%, var(--bg-card) 100%);
+    }
+
+    .aircraft-card.simbrief-active::before {
+      background: var(--accent-cyan);
+    }
+
+    .simbrief-badge {
+      background: var(--accent-cyan);
+      color: #000;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      margin-left: 6px;
+      display: inline-block;
     }
 
     .aircraft-manufacturer {
@@ -568,6 +649,16 @@
         max-width: 100%;
         width: 100%;
       }
+      .simbrief-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .simbrief-input-group {
+        width: 100%;
+      }
+      .simbrief-input {
+        flex: 1;
+      }
     }
   </style>
 </head>
@@ -579,7 +670,7 @@
       <div class="brand-logo">FS</div>
       <div class="brand-title">
         THE FLIGHTSCENE
-        <span>NORMAL CHECKLISTS EFB</span>
+        <span>EASYCHECKLIST</span>
       </div>
     </div>
     <div class="nav-actions">
@@ -597,13 +688,27 @@
       <div class="hero-header">
         <div class="hero-title">
           <h1>Selecteer Vliegtuig Checklist</h1>
-          <p>Interactieve normaal checklists voor vluchtsimulatie met inklapbare secties.</p>
+          <p>Interactieve normaal checklists voor vluchtsimulatie met automatische SimBrief koppeling.</p>
         </div>
         <button class="btn btn-danger" onclick="resetAllChecklists()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           Reset Alle Checklists
         </button>
       </div>
+
+      <!-- SIMBRIEF INTEGRATION PANEL -->
+      <div class="simbrief-card">
+        <div class="simbrief-input-group">
+          <label for="simbrief-id-input" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">SimBrief Pilot ID / User:</label>
+          <input type="text" id="simbrief-id-input" class="simbrief-input" placeholder="bijv. 123456 of Username">
+          <button class="btn btn-primary" onclick="handleFetchSimbrief()">Ophalen</button>
+          <button class="btn" onclick="handleClearSimbrief()">Wissen</button>
+        </div>
+        <div class="simbrief-info" id="simbrief-info-text">
+          <span>Voer je SimBrief ID in om de actieve vlucht te koppelen.</span>
+        </div>
+      </div>
+
       <div class="aircraft-grid" id="aircraft-grid"></div>
     </section>
 
@@ -639,10 +744,29 @@
     <div class="footer-brand">
       A <span>The FlightScene Sim Solutions</span> Product
     </div>
-    <div class="footer-version">Version 1.0.1</div>
+    <div class="footer-version">Version 1.0.2</div>
   </footer>
 
   <script>
+    // ICAO TO CHECKLIST MAPPING
+    const icaoMapping = {
+      "F70": "f70_f100", "F100": "f70_f100",
+      "A318": "a320", "A319": "a320", "A320": "a320", "A321": "a320",
+      "A19N": "a320", "A20N": "a320", "A21N": "a320",
+      "A332": "a330_a340", "A333": "a330_a340", "A338": "a330_a340", "A339": "a330_a340",
+      "A342": "a330_a340", "A343": "a330_a340", "A345": "a330_a340", "A346": "a330_a340",
+      "RJ70": "avro_rj", "RJ85": "avro_rj", "RJ100": "avro_rj",
+      "B37M": "b737_max", "B38M": "b737_max", "B39M": "b737_max", "B3XM": "b737_max",
+      "B736": "b737_ng", "B737": "b737_ng", "B738": "b737_ng", "B739": "b737_ng",
+      "B752": "b757", "B753": "b757",
+      "CRJ7": "crj", "CRJ9": "crj", "CRJX": "crj",
+      "E170": "ejets", "E175": "ejets", "E75L": "ejets", "E75S": "ejets",
+      "E190": "ejets", "E195": "ejets", "E290": "ejets", "E295": "ejets",
+      "F28": "f28",
+      "MD11": "md11", "MD1F": "md11",
+      "L101": "l1011"
+    };
+
     // DATA ALL 12 AIRCRAFT CHECKLISTS
     const aircraftData = [
       {
@@ -787,14 +911,20 @@
             { c: "ECAM STATUS", r: "CHECKED" },
             { c: "PITCH TRIM", r: "% UP/DN SET" },
             { c: "RUDDER TRIM", r: "NEUTRAL" },
-          ],
-          "TAXI": [
             { c: "FLIGHT CONTROLS", r: "CHECKED" },
             { c: "FLAPS", r: "CONF" },
             { c: "FMA", r: "READ AND CHECKED" },
             { c: "RADAR & PRED W/S", r: "ON" },
             { c: "ECAM MEMO", r: "T/O NO BLUE" },
             { c: "EFB", r: "AS RQRD" }
+          ],
+          "TAXI": [
+            { c: "AUTO BRAKE", r: "MAX" },
+            { c: "FLIGHT CONTROLS", r: "CHECKED" },
+            { c: "FLAPS", r: "SET FOR T/O" },
+            { c: "PITCH TRIM", r: "SET" },
+            { c: "RUDDER TRIM", r: "ZERO" },
+            { c: "ECAM MEMO", r: "T/O NO BLUE" }
           ],
           "BEFORE TAKEOFF": [
             { c: "CABIN", r: "SECURED FOR T/O" },
@@ -1877,11 +2007,14 @@
     // LOCAL STORAGE KEYS
     const STORAGE_CHECKED_KEY = 'tfss_efb_checked_state_v1';
     const STORAGE_OPEN_KEY = 'tfss_efb_open_state_v1';
+    const STORAGE_SIMBRIEF_KEY = 'tfss_efb_simbrief_id';
 
-    // STATE STORE WITH LOCALSTORAGE PERSISTENCE
+    // STATE STORE
     let currentAircraftId = null;
     let checkedState = loadStorage(STORAGE_CHECKED_KEY, {});
     let openBlocksState = loadStorage(STORAGE_OPEN_KEY, {});
+    let simbriefId = localStorage.getItem(STORAGE_SIMBRIEF_KEY) || '';
+    let activeSimbriefAircraftId = null;
 
     function loadStorage(key, fallback) {
       try {
@@ -1899,6 +2032,95 @@
       } catch (e) {
         console.error("Kon voortgang niet opslaan in localStorage", e);
       }
+    }
+
+    // JSONP CALLBACK FUNCTION FOR SIMBRIEF (Bypasses CORS restrictions completely)
+    window.simbriefCallback = function(data) {
+      const infoText = document.getElementById('simbrief-info-text');
+      
+      if (data && data.aircraft && data.aircraft.icaocode) {
+        const rawIcao = data.aircraft.icaocode.toUpperCase().trim();
+        const targetAircraftId = icaoMapping[rawIcao];
+
+        const fltNum = (data.general && data.general.flight_number) ? data.general.flight_number : ((data.atc && data.atc.callsign) ? data.atc.callsign : '');
+        const orig = (data.origin && data.origin.icaocode) ? data.origin.icaocode : '';
+        const dest = (data.destination && data.destination.icaocode) ? data.destination.icaocode : '';
+
+        activeSimbriefAircraftId = targetAircraftId || null;
+
+        if (targetAircraftId) {
+          infoText.innerHTML = `
+            <div class="simbrief-status-tag">
+              VLUCHT: ${fltNum || 'ACTIEF'} (${orig} → ${dest}) | TOESTEL: ${rawIcao}
+            </div>
+          `;
+        } else {
+          infoText.innerHTML = `
+            <div class="simbrief-status-tag" style="background: rgba(255, 179, 0, 0.1); color: var(--accent-amber); border-color: rgba(255, 179, 0, 0.3);">
+              Gevonden ICAO: ${rawIcao} (Geen specifieke checklist gekoppeld)
+            </div>
+          `;
+        }
+      } else {
+        infoText.innerHTML = '<span style="color:#FF5252">Geen actief SimBrief vluchtplan gevonden voor deze gebruiker.</span>';
+        activeSimbriefAircraftId = null;
+      }
+
+      renderHomeScreen();
+    };
+
+    // FETCH SIMBRIEF VIA JSONP SCRIPT INJECTION
+    function fetchSimbriefData(id) {
+      const infoText = document.getElementById('simbrief-info-text');
+      if (!id || id.trim() === '') {
+        activeSimbriefAircraftId = null;
+        infoText.innerHTML = '<span>Voer je SimBrief ID in om de actieve vlucht te koppelen.</span>';
+        renderHomeScreen();
+        return;
+      }
+
+      infoText.innerHTML = '<span><span style="color:var(--accent-cyan)">●</span> SimBrief gegevens ophalen...</span>';
+
+      const cleanId = id.trim();
+      const isNumeric = /^\d+$/.test(cleanId);
+      const queryParam = isNumeric ? `userid=${cleanId}` : `username=${cleanId}`;
+
+      // Verwijder oude script tag als die er is
+      const oldScript = document.getElementById('simbrief-jsonp-script');
+      if (oldScript) oldScript.remove();
+
+      // Maak nieuwe script tag met callback
+      const script = document.createElement('script');
+      script.id = 'simbrief-jsonp-script';
+      script.src = `https://www.simbrief.com/api/xml.fetch.php?${queryParam}&json=1&jsonp=simbriefCallback`;
+      
+      script.onerror = function() {
+        infoText.innerHTML = '<span style="color:#FF5252">Fout bij verbinding met SimBrief. Controleer je ID of internetverbinding.</span>';
+        activeSimbriefAircraftId = null;
+        renderHomeScreen();
+      };
+
+      document.body.appendChild(script);
+    }
+
+    function handleFetchSimbrief() {
+      const inputVal = document.getElementById('simbrief-id-input').value;
+      simbriefId = inputVal.trim();
+      if (simbriefId) {
+        localStorage.setItem(STORAGE_SIMBRIEF_KEY, simbriefId);
+      } else {
+        localStorage.removeItem(STORAGE_SIMBRIEF_KEY);
+      }
+      fetchSimbriefData(simbriefId);
+    }
+
+    function handleClearSimbrief() {
+      simbriefId = '';
+      document.getElementById('simbrief-id-input').value = '';
+      localStorage.removeItem(STORAGE_SIMBRIEF_KEY);
+      activeSimbriefAircraftId = null;
+      document.getElementById('simbrief-info-text').innerHTML = '<span>Voer je SimBrief ID in om de actieve vlucht te koppelen.</span>';
+      renderHomeScreen();
     }
 
     // RENDER HOME SCREEN
@@ -1920,14 +2142,18 @@
         });
 
         const percent = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+        const isSimbriefActive = (ac.id === activeSimbriefAircraftId);
 
         const card = document.createElement('div');
-        card.className = 'aircraft-card';
+        card.className = `aircraft-card ${isSimbriefActive ? 'simbrief-active' : ''}`;
         card.onclick = () => selectAircraft(ac.id);
 
         card.innerHTML = `
           <div>
-            <div class="aircraft-manufacturer">${ac.manufacturer}</div>
+            <div class="aircraft-manufacturer">
+              ${ac.manufacturer}
+              ${isSimbriefActive ? '<span class="simbrief-badge">SIMBRIEF ACTIEF</span>' : ''}
+            </div>
             <div class="aircraft-name">${ac.name}</div>
             <div class="badge">${ac.rev}</div>
           </div>
@@ -2134,7 +2360,12 @@
     }
 
     // INIT
-    renderHomeScreen();
+    if (simbriefId) {
+      document.getElementById('simbrief-id-input').value = simbriefId;
+      fetchSimbriefData(simbriefId);
+    } else {
+      renderHomeScreen();
+    }
   </script>
 </body>
 </html>
